@@ -42,6 +42,7 @@ body{font-family:'DM Sans',sans-serif;font-size:16px;color:var(--text);backgroun
 .section{margin-bottom:20px}
 .sec-label{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
 .divider{height:0.5px;background:var(--border);margin:18px 0}
+.print-val{display:none}
 
 /* Form fields */
 .row{display:grid;gap:8px;margin-bottom:8px}
@@ -166,6 +167,8 @@ select{cursor:pointer}
   #observaciones{display:none!important}
   #obs-print{display:block!important}
   select{-webkit-appearance:none;appearance:none;border:none;padding:0;background:transparent;color:#1a1916}
+  input,select,textarea{visibility:hidden;position:absolute}
+  .print-val{display:block!important}
 }
 @media screen {
   .print-header{display:none}
@@ -630,7 +633,9 @@ async function saveAndPrint(){
     }).catch(() => showSync('Sin conexión — guardado local','warn'));
   }
   lockForm(d.num);
+  prepareForPrint();
   window.print();
+  restoreAfterPrint();
 }
 
 function showSync(msg,type){
@@ -667,7 +672,34 @@ function unlockForm(){
 
 function reprintInvoice(){
   updatePrintHeader();
+  prepareForPrint();
   window.print();
+  restoreAfterPrint();
+}
+
+function prepareForPrint(){
+  document.querySelectorAll('.main input:not([type=hidden]), .main select, .main textarea').forEach(el=>{
+    const span = document.createElement('span');
+    span.className = 'print-replace';
+    span.textContent = el.tagName==='SELECT'
+      ? (el.options[el.selectedIndex]?.text||'')
+      : el.value;
+    span.style.fontSize = '13px';
+    span.style.color = '#000';
+    span.style.display = 'none';
+    el.parentNode.insertBefore(span, el.nextSibling);
+    el.dataset.printHidden = '1';
+  });
+  document.querySelectorAll('.print-replace').forEach(s=>s.style.display='inline');
+  document.querySelectorAll('[data-print-hidden]').forEach(el=>el.style.visibility='hidden');
+}
+
+function restoreAfterPrint(){
+  document.querySelectorAll('.print-replace').forEach(el=>el.remove());
+  document.querySelectorAll('[data-print-hidden]').forEach(el=>{
+    el.style.visibility='';
+    delete el.dataset.printHidden;
+  });
 }
 
 function newInvoice(){
