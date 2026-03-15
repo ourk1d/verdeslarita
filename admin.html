@@ -190,7 +190,7 @@ function initApp(){
   const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0');
   document.getElementById('art-from').value = y+'-'+m+'-01';
   document.getElementById('art-to').value = now.toISOString().slice(0,10);
-  if(sbUrl && sbKey) loadVentas();
+if(sbUrl && sbKey){ populateEmpresaFilter(); loadVentas(); }
 }
 
 if(sessionStorage.getItem('admin-ok') === '1'){
@@ -273,7 +273,7 @@ function renderVentas(rows,month){
     '<td><span style="font-size:12px;color:var(--muted)">'+empNombre(r.empresa)+'</span></td>'+
     '<td><span class="badge-v">'+(r.vendedor||'—')+'</span></td><td>'+(r.cliente||'')+'</td>'+
     '<td class="mono">'+(r.cod_producto||'')+'</td><td>'+(r.descripcion||'')+'</td>'+
-    '<td>'+fmt(r.precio_unit||0,r.moneda)+'</td><td>'+fmt(r.subtotal||0,r.moneda)+'</td>'+
+    '<td>'+(r.cantidad||0)+'</td><td>'+fmt(r.precio_unit||0,r.moneda)+'</td><td>'+fmt(r.subtotal||0,r.moneda)+'</td>'+
     '<td><button onclick="confirmDelete(event)" data-id="'+r.id+'" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:16px;padding:0 4px;opacity:.6" title="Eliminar fila">×</button></td></tr>'
   ).join('') : '<tr><td colspan="11" class="state">Sin registros.</td></tr>';
 }
@@ -284,9 +284,12 @@ function populateVendorFilter(rows){
   const vs = [...new Set(rows.map(r=>r.vendedor).filter(Boolean))].sort();
   sel.innerHTML = '<option value="">Todos</option>'+vs.map(v=>'<option>'+v+'</option>').join('');
   if(cur) sel.value = cur;
+}
+
+function populateEmpresaFilter(){
   const esel = document.getElementById('fil-empresa');
   const ecur = esel.value;
-  const es = [...new Set(rows.map(r=>r.empresa).filter(Boolean))].sort();
+  const es = Object.keys(EMPRESAS);
   esel.innerHTML = '<option value="">Todas</option>'+es.map(e=>'<option value="'+e+'">'+empNombre(e)+'</option>').join('');
   if(ecur) esel.value = ecur;
 }
