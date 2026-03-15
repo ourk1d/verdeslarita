@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Reportes — Admin</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500&family=DM+Mono:wght@400&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#f7f6f2;--surface:#fff;--border:rgba(0,0,0,.1);--border-md:rgba(0,0,0,.18);
+  --text:#1a1916;--muted:#7a7872;--radius:10px;--radius-lg:14px;
+  --ok-bg:#e6f4ea;--ok:#1e7e34;--danger:#c0392b;
+}
+body{font-family:'DM Sans',sans-serif;font-size:14px;color:var(--text);background:var(--bg);min-height:100vh}
+#login-screen{display:flex;align-items:center;justify-content:center;min-height:100vh}
+.login-box{background:var(--surface);border:0.5px solid var(--border-md);border-radius:var(--radius-lg);padding:2rem;width:300px}
+.login-box h1{font-size:18px;font-weight:500;margin-bottom:6px}
+.login-box p{font-size:13px;color:var(--muted);margin-bottom:20px;line-height:1.5}
+.login-err{font-size:12px;color:var(--danger);margin-top:8px;display:none}
+#app-screen{display:none;padding:28px 32px;max-width:980px;margin:0 auto}
+.app-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:20px}
+.app-title{font-size:20px;font-weight:500;letter-spacing:-.3px}
+.tab-btn{padding:6px 14px;border:0.5px solid var(--border-md);border-radius:var(--radius);font-size:12px;cursor:pointer;background:transparent;color:var(--muted);transition:.15s;font-family:'DM Sans',sans-serif}
+.tab-btn.active{background:var(--text);color:#fff;border-color:transparent}
+.cfg-panel{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px;margin-bottom:20px}
+.cfg-row{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-bottom:10px}
+.filters{display:flex;gap:10px;align-items:flex-end;margin-bottom:24px;flex-wrap:wrap}
+.filter-group{display:flex;flex-direction:column;gap:4px}
+.filter-group label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em}
+input,select{padding:8px 10px;font-size:13px;font-family:'DM Sans',sans-serif;border:0.5px solid var(--border-md);border-radius:var(--radius);background:var(--surface);color:var(--text);outline:none}
+input:focus,select:focus{border-color:#666}
+.btn{padding:8px 16px;border:0.5px solid var(--border-md);border-radius:var(--radius);background:transparent;color:var(--text);font-size:13px;font-family:'DM Sans',sans-serif;cursor:pointer;transition:.15s}
+.btn:hover{background:var(--bg)}
+.btn-primary{background:var(--text);color:#fff;border-color:transparent}
+.btn-primary:hover{opacity:.85}
+.btn-sm{font-size:12px;padding:6px 12px}
+.cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:12px;margin-bottom:24px}
+.card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.card-label{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px}
+.card-value{font-size:22px;font-weight:500;letter-spacing:-.5px}
+.card-sub{font-size:12px;color:var(--muted);margin-top:3px}
+.sec-title{font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:12px}
+.vendor-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:10px;margin-bottom:28px}
+.vendor-card{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);padding:14px 16px}
+.vendor-name{font-weight:500;font-size:14px;margin-bottom:8px}
+.vendor-stat{display:flex;justify-content:space-between;font-size:12px;color:var(--muted);padding:2px 0}
+.vendor-stat b{color:var(--text);font-weight:500}
+.vendor-bar-wrap{margin-top:10px;height:4px;background:var(--bg);border-radius:2px;overflow:hidden}
+.vendor-bar{height:4px;background:var(--text);border-radius:2px;transition:.4s}
+.table-wrap{background:var(--surface);border:0.5px solid var(--border);border-radius:var(--radius-lg);overflow:hidden;margin-bottom:28px}
+table{width:100%;border-collapse:collapse;font-size:13px}
+thead tr{background:var(--bg)}
+th{padding:10px 14px;text-align:left;font-size:11px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.06em;border-bottom:0.5px solid var(--border)}
+td{padding:10px 14px;border-bottom:0.5px solid var(--border);color:var(--text)}
+tr:last-child td{border-bottom:none}
+tr:hover td{background:var(--bg)}
+.mono{font-family:'DM Mono',monospace;font-size:12px}
+.badge-v{display:inline-block;font-size:11px;padding:2px 8px;border-radius:20px;background:var(--ok-bg);color:var(--ok)}
+.state{text-align:center;padding:36px;color:var(--muted);font-size:13px}
+.loading-dot{display:inline-block;width:6px;height:6px;background:var(--muted);border-radius:50%;margin:0 2px;animation:blink 1.2s infinite}
+.loading-dot:nth-child(2){animation-delay:.2s}
+.loading-dot:nth-child(3){animation-delay:.4s}
+@keyframes blink{0%,80%,100%{opacity:.2}40%{opacity:1}}
+@media(max-width:600px){#app-screen{padding:16px}.cfg-row{grid-template-columns:1fr}.cards{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+
+<div id="login-screen">
+  <div class="login-box">
+    <h1>Reportes admin</h1>
+    <p>Acceso restringido. Ingresá la contraseña.</p>
+    <div class="filter-group" style="width:100%;margin-bottom:10px">
+      <label>Contraseña</label>
+      <input type="password" id="pwd-input" placeholder="••••••••" style="width:100%" onkeydown="if(event.key==='Enter')doLogin()"/>
+    </div>
+    <button class="btn btn-primary" style="width:100%" onclick="doLogin()">Entrar</button>
+    <div class="login-err" id="login-err">Contraseña incorrecta.</div>
+  </div>
+</div>
+
+<div id="app-screen">
+  <div class="app-header">
+    <span class="app-title">Reportes</span>
+    <div style="display:flex;gap:8px;align-items:center">
+      <div style="display:flex;gap:4px">
+        <button class="tab-btn active" id="tab-btn-ventas" onclick="showSection('ventas')">Ventas</button>
+        <button class="tab-btn" id="tab-btn-articulos" onclick="showSection('articulos')">Artículos</button>
+      </div>
+      <button class="btn btn-sm" onclick="doLogout()">Salir</button>
+    </div>
+  </div>
+
+
+
+  <div id="section-ventas">
+    <div class="filters">
+      <div class="filter-group"><label>Mes</label><input type="month" id="fil-month"/></div>
+      <div class="filter-group">
+        <label>Empresa</label>
+        <select id="fil-empresa"><option value="">Todas</option></select>
+      </div>
+      <div class="filter-group">
+        <label>Vendedor</label>
+        <select id="fil-vendor"><option value="">Todos</option></select>
+      </div>
+      <button class="btn btn-primary btn-sm" onclick="loadVentas()">Actualizar</button>
+      <button class="btn btn-sm" onclick="exportVentasCSV()">Exportar CSV</button>
+    </div>
+    <div class="cards">
+      <div class="card"><div class="card-label">Total del período</div><div class="card-value" id="sum-total">—</div><div class="card-sub" id="sum-period"></div></div>
+      <div class="card"><div class="card-label">Facturas</div><div class="card-value" id="sum-facturas">—</div></div>
+      <div class="card"><div class="card-label">Líneas</div><div class="card-value" id="sum-lineas">—</div></div>
+      <div class="card"><div class="card-label">Vendedores activos</div><div class="card-value" id="sum-vendors">—</div></div>
+    </div>
+    <div class="sec-title">Ventas por vendedor</div>
+    <div class="vendor-grid" id="vendor-grid"></div>
+    <div class="sec-title">Detalle de facturas</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>N° Factura</th><th>Fecha</th><th>Empresa</th><th>Vendedor</th><th>Cliente</th><th>Código</th><th>Descripción</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th></th></tr></thead>
+        <tbody id="ventas-tbody"><tr><td colspan="9" class="state">Seleccioná un mes y hacé clic en Actualizar.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+
+  <div id="section-articulos" style="display:none">
+    <div class="filters">
+      <div class="filter-group"><label>Desde</label><input type="date" id="art-from"/></div>
+      <div class="filter-group"><label>Hasta</label><input type="date" id="art-to"/></div>
+      <div class="filter-group"><label>Buscar código</label><input type="text" id="art-cod" placeholder="COD-001..." style="width:140px"/></div>
+      <button class="btn btn-primary btn-sm" onclick="loadArticulos()">Buscar</button>
+      <button class="btn btn-sm" onclick="exportArticulosCSV()">Exportar CSV</button>
+    </div>
+    <div class="cards" style="grid-template-columns:repeat(3,1fr)">
+      <div class="card"><div class="card-label">Artículos únicos</div><div class="card-value" id="art-sum-unicos">—</div></div>
+      <div class="card"><div class="card-label">Unidades totales</div><div class="card-value" id="art-sum-qty">—</div></div>
+      <div class="card"><div class="card-label">Total facturado</div><div class="card-value" id="art-sum-total">—</div></div>
+    </div>
+    <div class="sec-title">Artículos facturados</div>
+    <div class="table-wrap">
+      <table>
+        <thead><tr><th>Código</th><th>Descripción</th><th>Cant. total</th><th>Precio unit.</th><th>Total facturado</th><th>En facturas</th></tr></thead>
+        <tbody id="art-tbody"><tr><td colspan="6" class="state">Seleccioná un rango de fechas y hacé clic en Buscar.</td></tr></tbody>
+      </table>
+    </div>
+  </div>
+</div>
+
+<script>
+const STORAGE_KEY = 'reportes-cfg-v1';
+const ADMIN_PASSWORD = 'ml12qwaszx'; 
+
+const SUPABASE_URL = 'https://inzjpzzucwqieoxirqvi.supabase.co';
+const SUPABASE_KEY = 'sb_publishable_XsYusr0JjHAtFC4fl4CD-w_9d5iIwDH';
+const APP_SECRET = 'paddyspubcastolo10';
+let sbUrl = SUPABASE_URL, sbKey = SUPABASE_KEY, appSecret = APP_SECRET, ventasRows = [], artRows = [];
+
+function doLogin(){
+  if(document.getElementById('pwd-input').value === ADMIN_PASSWORD){
+    sessionStorage.setItem('admin-ok','1');
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app-screen').style.display = 'block';
+    initApp();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+  }
+}
+
+function doLogout(){
+  sessionStorage.removeItem('admin-ok');
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('app-screen').style.display = 'none';
+  document.getElementById('pwd-input').value = '';
+  document.getElementById('login-err').style.display = 'none';
+}
+
+function initApp(){
+  loadCfg();
+  const now = new Date();
+  document.getElementById('fil-month').value = now.toISOString().slice(0,7);
+  const y = now.getFullYear(), m = String(now.getMonth()+1).padStart(2,'0');
+  document.getElementById('art-from').value = y+'-'+m+'-01';
+  document.getElementById('art-to').value = now.toISOString().slice(0,10);
+  if(sbUrl && sbKey) loadVentas();
+}
+
+if(sessionStorage.getItem('admin-ok') === '1'){
+  document.getElementById('login-screen').style.display = 'none';
+  document.getElementById('app-screen').style.display = 'block';
+  initApp();
+}
+
+function showSection(sec){
+  document.getElementById('section-ventas').style.display = sec==='ventas' ? 'block' : 'none';
+  document.getElementById('section-articulos').style.display = sec==='articulos' ? 'block' : 'none';
+  document.getElementById('tab-btn-ventas').classList.toggle('active', sec==='ventas');
+  document.getElementById('tab-btn-articulos').classList.toggle('active', sec==='articulos');
+}
+
+function loadCfg(){
+  // credentials are hardcoded — nothing to load
+}
+
+function fmt(n){ return '$ '+Number(n).toLocaleString('es-UY',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function loading(id,cols){ document.getElementById(id).innerHTML='<tr><td colspan="'+cols+'" class="state"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></td></tr>'; }
+function errRow(id,cols,msg){ document.getElementById(id).innerHTML='<tr><td colspan="'+cols+'" class="state" style="color:var(--danger)">'+msg+'</td></tr>'; }
+
+async function loadVentas(){
+  if(!sbUrl||!sbKey||!appSecret){ alert('Credenciales no configuradas.'); return; }
+  loading('ventas-tbody',11);
+  const month = document.getElementById('fil-month').value;
+  const vendor = document.getElementById('fil-vendor').value;
+  const empresa = document.getElementById('fil-empresa').value;
+  let q = sbUrl+'/rest/v1/facturas?select=*&order=fecha.desc,created_at.desc';
+  if(month){
+    const d = new Date(month+'-01'); d.setMonth(d.getMonth()+1);
+    q += '&fecha=gte.'+month+'-01&fecha=lt.'+d.toISOString().slice(0,10);
+  }
+  if(empresa) q += '&empresa=eq.'+encodeURIComponent(empresa);
+  if(vendor) q += '&vendedor=eq.'+encodeURIComponent(vendor);
+  try{
+    const res = await fetch(q,{headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey,'Accept':'application/json','x-app-secret':appSecret}});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    ventasRows = await res.json();
+    renderVentas(ventasRows,month);
+    populateVendorFilter(ventasRows);
+  }catch(err){ errRow('ventas-tbody',11,'Error: '+err.message); }
+}
+
+function renderVentas(rows,month){
+  const total = rows.reduce((a,r)=>a+(parseFloat(r.subtotal)||0),0);
+  const facturas = [...new Set(rows.map(r=>r.num))].length;
+  const vendors = [...new Set(rows.map(r=>r.vendedor).filter(Boolean))];
+  document.getElementById('sum-total').textContent = fmt(total);
+  document.getElementById('sum-facturas').textContent = facturas;
+  document.getElementById('sum-lineas').textContent = rows.length;
+  document.getElementById('sum-vendors').textContent = vendors.length;
+  document.getElementById('sum-period').textContent = month||'Todo el período';
+
+  const byV = {};
+  rows.forEach(r=>{
+    const v = r.vendedor||'Sin asignar';
+    if(!byV[v]) byV[v]={total:0,facturas:new Set(),lineas:0};
+    byV[v].total += parseFloat(r.subtotal)||0;
+    byV[v].facturas.add(r.num);
+    byV[v].lineas++;
+  });
+  const maxT = Math.max(...Object.values(byV).map(v=>v.total),1);
+  document.getElementById('vendor-grid').innerHTML = Object.entries(byV).sort((a,b)=>b[1].total-a[1].total).map(([name,d])=>
+    '<div class="vendor-card"><div class="vendor-name">'+name+'</div>'+
+    '<div class="vendor-stat"><span>Total</span><b>'+fmt(d.total)+'</b></div>'+
+    '<div class="vendor-stat"><span>Facturas</span><b>'+d.facturas.size+'</b></div>'+
+    '<div class="vendor-stat"><span>Líneas</span><b>'+d.lineas+'</b></div>'+
+    '<div class="vendor-bar-wrap"><div class="vendor-bar" style="width:'+Math.round(d.total/maxT*100)+'%"></div></div></div>'
+  ).join('') || '<div style="color:var(--muted);font-size:13px">Sin datos.</div>';
+
+  document.getElementById('ventas-tbody').innerHTML = rows.length ? rows.map(r=>
+    '<tr><td class="mono">'+(r.num||'')+'</td><td>'+(r.fecha||'')+'</td>'+
+    '<td><span style="font-size:12px;color:var(--muted)">'+(r.empresa||'—')+'</span></td>'+
+    '<td><span class="badge-v">'+(r.vendedor||'—')+'</span></td><td>'+(r.cliente||'')+'</td>'+
+    '<td class="mono">'+(r.cod_producto||'')+'</td><td>'+(r.descripcion||'')+'</td>'+
+    '<td>'+(r.cantidad||'')+'</td><td>'+fmt(r.precio_unit||0)+'</td><td>'+fmt(r.subtotal||0)+'</td>'+
+    '<td><button onclick="confirmDelete(event)" data-id="'+r.id+'" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:16px;padding:0 4px;opacity:.6" title="Eliminar fila">×</button></td></tr>'
+  ).join('') : '<tr><td colspan="11" class="state">Sin registros.</td></tr>';
+}
+
+function populateVendorFilter(rows){
+  const sel = document.getElementById('fil-vendor');
+  const cur = sel.value;
+  const vs = [...new Set(rows.map(r=>r.vendedor).filter(Boolean))].sort();
+  sel.innerHTML = '<option value="">Todos</option>'+vs.map(v=>'<option>'+v+'</option>').join('');
+  if(cur) sel.value = cur;
+  const esel = document.getElementById('fil-empresa');
+  const ecur = esel.value;
+  const es = [...new Set(rows.map(r=>r.empresa).filter(Boolean))].sort();
+  esel.innerHTML = '<option value="">Todas</option>'+es.map(e=>'<option>'+e+'</option>').join('');
+  if(ecur) esel.value = ecur;
+}
+
+function exportVentasCSV(){
+  if(!ventasRows.length) return;
+  const h = ['N° Factura','Fecha','Empresa','Vendedor','Cliente','CI','Dirección','Teléfono','Código','Descripción','Cantidad','Precio Unit.','Subtotal'];
+  const r = ventasRows.map(r=>[r.num,r.fecha,r.empresa,r.vendedor,r.cliente,r.ci,r.direccion,r.telefono,r.cod_producto,r.descripcion,r.cantidad,r.precio_unit,r.subtotal]);
+  downloadCSV([h,...r],'ventas_'+(document.getElementById('fil-month').value||'completo')+'.csv');
+}
+
+async function loadArticulos(){
+  if(!sbUrl||!sbKey||!appSecret){ alert('Credenciales no configuradas.'); return; }
+  loading('art-tbody',6);
+  const from = document.getElementById('art-from').value;
+  const to = document.getElementById('art-to').value;
+  const codFil = document.getElementById('art-cod').value.trim().toLowerCase();
+  let q = sbUrl+'/rest/v1/facturas?select=cod_producto,descripcion,cantidad,precio_unit,subtotal,fecha,num&order=fecha.desc';
+  if(from) q += '&fecha=gte.'+from;
+  if(to)   q += '&fecha=lte.'+to;
+  try{
+    const res = await fetch(q,{headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey,'Accept':'application/json','x-app-secret':appSecret}});
+    if(!res.ok) throw new Error('HTTP '+res.status);
+    let rows = await res.json();
+    if(codFil) rows = rows.filter(r=>(r.cod_producto||'').toLowerCase().includes(codFil));
+    artRows = rows;
+    renderArticulos(rows);
+  }catch(err){ errRow('art-tbody',6,'Error: '+err.message); }
+}
+
+function renderArticulos(rows){
+  const byCode = {};
+  rows.forEach(r=>{
+    const cod = r.cod_producto||'(sin código)';
+    if(!byCode[cod]) byCode[cod]={desc:r.descripcion||'',precio:parseFloat(r.precio_unit)||0,qty:0,total:0,facturas:new Set()};
+    byCode[cod].qty += parseFloat(r.cantidad)||0;
+    byCode[cod].total += parseFloat(r.subtotal)||0;
+    byCode[cod].facturas.add(r.num);
+  });
+  const sorted = Object.entries(byCode).sort((a,b)=>b[1].total-a[1].total);
+  document.getElementById('art-sum-unicos').textContent = sorted.length;
+  document.getElementById('art-sum-qty').textContent = sorted.reduce((a,[,d])=>a+d.qty,0).toLocaleString('es-UY');
+  document.getElementById('art-sum-total').textContent = fmt(sorted.reduce((a,[,d])=>a+d.total,0));
+  document.getElementById('art-tbody').innerHTML = sorted.length ? sorted.map(([cod,d])=>
+    '<tr><td class="mono">'+cod+'</td><td>'+d.desc+'</td><td>'+d.qty.toLocaleString('es-UY')+'</td>'+
+    '<td>'+fmt(d.precio)+'</td><td>'+fmt(d.total)+'</td>'+
+    '<td style="color:var(--muted);font-size:12px">'+d.facturas.size+' factura'+(d.facturas.size!==1?'s':'')+'</td></tr>'
+  ).join('') : '<tr><td colspan="6" class="state">Sin resultados.</td></tr>';
+}
+
+function exportArticulosCSV(){
+  if(!artRows.length) return;
+  const byCode = {};
+  artRows.forEach(r=>{
+    const cod = r.cod_producto||'(sin código)';
+    if(!byCode[cod]) byCode[cod]={desc:r.descripcion||'',precio:parseFloat(r.precio_unit)||0,qty:0,total:0,facturas:new Set()};
+    byCode[cod].qty += parseFloat(r.cantidad)||0;
+    byCode[cod].total += parseFloat(r.subtotal)||0;
+    byCode[cod].facturas.add(r.num);
+  });
+  const h = ['Código','Descripción','Cant. total','Precio unit.','Total facturado','N° facturas'];
+  const r = Object.entries(byCode).sort((a,b)=>b[1].total-a[1].total).map(([cod,d])=>[cod,d.desc,d.qty,d.precio.toFixed(2),d.total.toFixed(2),d.facturas.size]);
+  downloadCSV([h,...r],'articulos_'+document.getElementById('art-from').value+'_'+document.getElementById('art-to').value+'.csv');
+}
+
+function confirmDelete(e){
+  const id = e.target.dataset.id;
+  if(!id){ alert('Error: no se encontró el ID.'); return; }
+  if(!confirm('¿Eliminar esta fila de la base de datos? Esta acción no se puede deshacer.')) return;
+  deleteRow(id);
+}
+
+async function deleteRow(id){
+  try{
+    const res = await fetch(sbUrl+'/rest/v1/facturas?id=eq.'+id,{
+      method:'DELETE',
+      headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey,'Content-Type':'application/json','Prefer':'return=minimal','x-app-secret':appSecret}
+    });
+    if(res.ok){
+      loadVentas();
+    } else {
+      alert('Error al eliminar: '+res.status);
+    }
+  }catch(e){
+    alert('Error de conexión: '+e.message);
+  }
+}
+
+function downloadCSV(rows,filename){
+  const csv = rows.map(r=>r.map(c=>'"'+String(c??'').replace(/"/g,'""')+'"').join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(new Blob(['\uFEFF'+csv],{type:'text/csv;charset=utf-8'}));
+  a.download = filename;
+  a.click();
+}
+</script>
+</body>
+</html>
