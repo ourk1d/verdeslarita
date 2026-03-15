@@ -51,7 +51,7 @@ body{font-family:'DM Sans',sans-serif;font-size:16px;color:var(--text);backgroun
 .row-1{grid-template-columns:1fr}
 label{font-size:14px;color:var(--text);display:block;margin-bottom:3px;font-weight:500}
 input,select,textarea{
-  width:100%;padding:8px 10px;font-size:16px;font-family:'DM Sans',sans-serif;
+  width:100%;padding:8px 10px;font-size:15px;font-family:'DM Sans',sans-serif;
   border:0.5px solid var(--border-md);border-radius:var(--radius);
   background:var(--surface);color:var(--text);outline:none;transition:.15s;
   input::placeholder{color:#888}
@@ -680,15 +680,15 @@ function reprintInvoice(){
 
 function prepareForPrint(){
   document.querySelectorAll('.main input:not([type=hidden]), .main select, .main textarea').forEach(el=>{
-  const span = document.createElement('span');
-  span.className = 'print-replace';
-  span.textContent = el.tagName==='SELECT'
-    ? (el.options[el.selectedIndex]?.text||'')
-    : el.value;
-  span.style.color = '#000';
-  span.style.display = 'none';
-      el.parentNode.insertBefore(span, el.nextSibling);
-      el.dataset.printHidden = '1';
+    const computed = window.getComputedStyle(el);
+    const span = document.createElement('span');
+    span.className = 'print-replace';
+    span.textContent = el.tagName==='SELECT'
+      ? (el.options[el.selectedIndex]?.text||'')
+      : el.value;
+    span.style.cssText = 'color:#000;display:none;font-size:'+computed.fontSize+';font-family:'+computed.fontFamily+';font-weight:'+computed.fontWeight+';line-height:'+computed.lineHeight;
+    el.parentNode.insertBefore(span, el.nextSibling);
+    el.dataset.printHidden = '1';
   });
   document.querySelectorAll('.print-replace').forEach(s=>s.style.display='inline');
   document.querySelectorAll('[data-print-hidden]').forEach(el=>el.style.visibility='hidden');
