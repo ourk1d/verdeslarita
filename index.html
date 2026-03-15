@@ -97,6 +97,7 @@ select{cursor:pointer}
 
 /* Status indicator */
 #sync-status{font-size:12px;padding:6px 10px;border-radius:var(--radius);margin-top:8px;transition:.3s;display:none}
+#form-locked-bar{display:none;background:var(--ok-bg);color:var(--ok);font-size:13px;padding:10px 14px;border-radius:var(--radius);margin-bottom:14px;align-items:center;justify-content:space-between;gap:10px}
 #sync-status.show{display:block}
 #sync-status.info{background:var(--info-bg);color:var(--info)}
 #sync-status.ok{background:var(--ok-bg);color:var(--ok)}
@@ -205,8 +206,15 @@ select{cursor:pointer}
         <button class="btn btn-primary btn-sm" onclick="saveAndPrint()">Guardar e imprimir</button>
       </div>
     </div>
-
+  
     <div id="sync-status"></div>
+    <div id="form-locked-bar" class="no-print">
+      <span id="locked-msg">Factura guardada</span>
+      <div style="display:flex;gap:8px">
+        <button class="btn btn-sm" onclick="reprintInvoice()">Reimprimir</button>
+        <button class="btn btn-primary btn-sm" onclick="newInvoice()">Nueva factura</button>
+      </div>
+    </div>
 
     <!-- Empresa selector (top, screen only) -->
     <div class="no-print" style="margin-bottom:14px">
@@ -619,6 +627,7 @@ async function saveAndPrint(){
       else{ res.text().then(t => showSync('Error: '+t,'warn')); }
     }).catch(() => showSync('Sin conexión — guardado local','warn'));
   }
+  lockForm(d.num);
   window.print();
 }
 
@@ -630,7 +639,39 @@ function showSync(msg,type){
 function hideSyncStatus(){
   document.getElementById('sync-status').className = '';
 }
+// ---- Form lock ----
+function lockForm(num){
+  document.getElementById('form-locked-bar').style.display='flex';
+  document.getElementById('locked-msg').textContent='Factura #'+num+' guardada';
+  document.getElementById('app-screen') && null;
+  // Disable all inputs and selects in main form
+  document.querySelectorAll('.main input, .main select, .main textarea, #add-line-btn, .btn-del').forEach(el=>{
+    el.disabled=true;
+    el.style.opacity='.5';
+    el.style.pointerEvents='none';
+  });
+  document.querySelector('.header-actions').style.display='none';
+}
 
+function unlockForm(){
+  document.getElementById('form-locked-bar').style.display='none';
+  document.querySelectorAll('.main input, .main select, .main textarea, #add-line-btn, .btn-del').forEach(el=>{
+    el.disabled=false;
+    el.style.opacity='';
+    el.style.pointerEvents='';
+  });
+  document.querySelector('.header-actions').style.display='flex';
+}
+
+function reprintInvoice(){
+  updatePrintHeader();
+  window.print();
+}
+
+function newInvoice(){
+  unlockForm();
+  clearForm();
+}
 // ---- Clear form ----
 function clearForm(){
   ['inv-num','inv-date','cli-name','cli-rut','cli-phone','cli-addr'].forEach(id=>{
@@ -666,6 +707,7 @@ function loadInvoice(inv){
   document.getElementById('lines-container').innerHTML='';
   (inv.lines||[]).forEach(l=>addLine(l.cod||'',l.desc,l.qty,l.price));
   calcTotals();
+  lockForm(inv.num);
 }
 
 function deleteInvoice(num,e){
