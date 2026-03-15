@@ -42,7 +42,6 @@ body{font-family:'DM Sans',sans-serif;font-size:16px;color:var(--text);backgroun
 .section{margin-bottom:20px}
 .sec-label{font-size:10px;font-weight:500;color:var(--muted);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
 .divider{height:0.5px;background:var(--border);margin:18px 0}
-.print-val{display:none}
 
 /* Form fields */
 .row{display:grid;gap:8px;margin-bottom:8px}
@@ -51,7 +50,7 @@ body{font-family:'DM Sans',sans-serif;font-size:16px;color:var(--text);backgroun
 .row-1{grid-template-columns:1fr}
 label{font-size:14px;color:var(--text);display:block;margin-bottom:3px;font-weight:500}
 input,select,textarea{
-  width:100%;padding:8px 10px;font-size:16px;font-family:'DM Sans',sans-serif;
+  width:100%;padding:8px 10px;font-size:13px;font-family:'DM Sans',sans-serif;
   border:0.5px solid var(--border-md);border-radius:var(--radius);
   background:var(--surface);color:var(--text);outline:none;transition:.15s;
   input::placeholder{color:#888}
@@ -63,8 +62,8 @@ select{cursor:pointer}
 /* Line items */
 .line-headers{display:grid;grid-template-columns:78px 1fr 50px 82px 22px;gap:5px;font-size:10px;color:var(--muted);margin-bottom:4px;padding:0 1px;text-transform:uppercase;letter-spacing:.05em}
 .line-row{display:grid;grid-template-columns:78px 1fr 50px 82px 22px;gap:5px;align-items:center;margin-bottom:5px}
-.line-row input{font-size:16px;padding:6px 8px}
-.line-row input:first-child{font-family:'DM Mono',monospace;font-size:14px}
+.line-row input{font-size:12px;padding:6px 8px}
+.line-row input:first-child{font-family:'DM Mono',monospace;font-size:11px}
 
 /* Totals */
 .totals-block{margin-top:12px;padding-top:12px;border-top:0.5px solid var(--border)}
@@ -151,7 +150,7 @@ select{cursor:pointer}
   .app-header,.config-panel,.section-title-bar{display:none}
   .section{margin-bottom:12px}
   .sec-label{font-size:12px;font-weight:500;color:var(--text);text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px}
-  input,select,textarea{border:none;padding:0;background:transparent;color:#000;-webkit-text-fill-color:#000;opacity:1}
+  input,select{border:none;padding:0;font-size:13px;background:transparent;color:#1a1916}
   select{-webkit-appearance:none;appearance:none}
   .row{margin-bottom:4px}
   .line-headers{font-size:10px;color:#999}
@@ -162,14 +161,11 @@ select{cursor:pointer}
   .total-row.grand{border-top:1px solid #ddd}
   #add-line-btn{display:none}
   #sync-status{display:none!important}
-  #inv-num-display{border:none!important;background:transparent!important;padding:0!important;color:#1a1916!important;font-size:16px!important}
+  #inv-num-display{border:none!important;background:transparent!important;padding:0!important;color:#1a1916!important;font-size:13px!important}
   .print-footer{display:block!important;margin-top:20px;padding-top:10px;border-top:1px solid #ddd;font-size:11px;color:#aaa;text-align:center}
   #observaciones{display:none!important}
   #obs-print{display:block!important}
   select{-webkit-appearance:none;appearance:none;border:none;padding:0;background:transparent;color:#1a1916}
-  input,select,textarea{visibility:hidden;position:absolute}
-  .print-val{display:block!important}
-  .print-replace{font-size:16px!important;color:#000!important;font-family:'DM Sans',sans-serif!important}
 }
 @media screen {
   .print-header{display:none}
@@ -325,11 +321,11 @@ select{cursor:pointer}
 
     <div class="section" style="margin-top:14px">
       <div class="sec-label">Observaciones</div>
-      <textarea id="observaciones" rows="3" placeholder="Ej: Descuento aplicado $500, entrega a cuenta $1.000, acuerdo especial..." style="resize:vertical;font-family:'DM Sans',sans-serif;font-size:16px"></textarea>
+      <textarea id="observaciones" rows="3" placeholder="Ej: Descuento aplicado $500, entrega a cuenta $1.000, acuerdo especial..." style="resize:vertical;font-family:'DM Sans',sans-serif;font-size:13px"></textarea>
       <div id="obs-print" style="display:none;font-size:13px;color:#1a1916;line-height:1.6;white-space:pre-wrap"></div>
     </div>
 
-   <div style="margin-top:12px;padding-top:10px;border-top:1px solid #ddd;font-size:14px;color:#555;line-height:1.6">
+   <div style="margin-top:12px;padding-top:10px;border-top:1px solid #ddd;font-size:10px;color:#888;line-height:1.6">
   <strong style="display:block;margin-bottom:3px;color:#555">Condiciones de garantía</strong>
   Colchones que presenten manchas o roturas en su tapizado no tienen garantía bajo ningún concepto. Electrodomésticos que hayan sido abiertos, o presenten signos de golpes o alteraciones externas, pierden su garantía.
 </div>
@@ -634,9 +630,7 @@ async function saveAndPrint(){
     }).catch(() => showSync('Sin conexión — guardado local','warn'));
   }
   lockForm(d.num);
-  prepareForPrint();
   window.print();
-  restoreAfterPrint();
 }
 
 function showSync(msg,type){
@@ -673,33 +667,7 @@ function unlockForm(){
 
 function reprintInvoice(){
   updatePrintHeader();
-  prepareForPrint();
   window.print();
-  restoreAfterPrint();
-}
-
-function prepareForPrint(){
-  document.querySelectorAll('.main input:not([type=hidden]), .main select, .main textarea').forEach(el=>{
-    const computed = window.getComputedStyle(el);
-    const span = document.createElement('span');
-    span.className = 'print-replace';
-    span.textContent = el.tagName==='SELECT'
-      ? (el.options[el.selectedIndex]?.text||'')
-      : el.value;
-    span.style.cssText = 'color:#000;display:none;font-size:'+computed.fontSize+';font-family:'+computed.fontFamily+';font-weight:'+computed.fontWeight+';line-height:'+computed.lineHeight;
-    el.parentNode.insertBefore(span, el.nextSibling);
-    el.dataset.printHidden = '1';
-  });
-  document.querySelectorAll('.print-replace').forEach(s=>s.style.display='inline');
-  document.querySelectorAll('[data-print-hidden]').forEach(el=>el.style.visibility='hidden');
-}
-
-function restoreAfterPrint(){
-  document.querySelectorAll('.print-replace').forEach(el=>el.remove());
-  document.querySelectorAll('[data-print-hidden]').forEach(el=>{
-    el.style.visibility='';
-    delete el.dataset.printHidden;
-  });
 }
 
 function newInvoice(){
