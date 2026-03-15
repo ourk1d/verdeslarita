@@ -166,6 +166,22 @@ select{cursor:pointer}
   #observaciones{display:none!important}
   #obs-print{display:block!important}
   select{-webkit-appearance:none;appearance:none;border:none;padding:0;background:transparent;color:#000!important;-webkit-text-fill-color:#000!important}
+  input[type="text"],input[type="date"],input[type="number"],input[type="tel"],input[type="email"],textarea{
+  -webkit-text-fill-color:#000!important;
+  color:#000!important;
+  opacity:1!important;
+  border:none!important;
+  border-bottom:none!important;
+  outline:none!important;
+  box-shadow:none!important;
+  -webkit-box-shadow:none!important;
+  background:transparent!important;
+}
+input:disabled,select:disabled,textarea:disabled{
+  -webkit-text-fill-color:#000!important;
+  color:#000!important;
+  opacity:1!important;
+}
 }
 @media screen {
   .print-header{display:none}
