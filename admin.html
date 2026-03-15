@@ -109,7 +109,7 @@ tr:hover td{background:var(--bg)}
       <button class="btn btn-sm" onclick="exportVentasCSV()">Exportar CSV</button>
     </div>
     <div class="cards">
-      <div class="card"><div class="card-label">Total del período</div><div class="card-value" id="sum-total">—</div><div class="card-sub" id="sum-period"></div></div>
+      <div class="card"><div class="card-label">Total del período</div><div class="card-value" id="sum-total-uyu" style="font-size:17px">—</div><div class="card-value" id="sum-total-usd" style="font-size:17px;margin-top:4px">—</div><div class="card-sub" id="sum-period"></div></div>
       <div class="card"><div class="card-label">Facturas</div><div class="card-value" id="sum-facturas">—</div></div>
       <div class="card"><div class="card-label">Líneas</div><div class="card-value" id="sum-lineas">—</div></div>
       <div class="card"><div class="card-label">Vendedores activos</div><div class="card-value" id="sum-vendors">—</div></div>
@@ -240,10 +240,12 @@ async function loadVentas(){
 }
 
 function renderVentas(rows,month){
-  const total = rows.reduce((a,r)=>a+(parseFloat(r.subtotal)||0),0);
+  const totalUYU = rows.filter(r=>r.moneda!=='USD').reduce((a,r)=>a+(parseFloat(r.subtotal)||0),0);
+  const totalUSD = rows.filter(r=>r.moneda==='USD').reduce((a,r)=>a+(parseFloat(r.subtotal)||0),0);
   const facturas = [...new Set(rows.map(r=>r.num))].length;
   const vendors = [...new Set(rows.map(r=>r.vendedor).filter(Boolean))];
-  document.getElementById('sum-total').textContent = fmt(total);
+  document.getElementById('sum-total-uyu').textContent = totalUYU > 0 ? fmt(totalUYU) : '—';
+  document.getElementById('sum-total-usd').textContent = totalUSD > 0 ? fmt(totalUSD, 'USD') : '—';
   document.getElementById('sum-facturas').textContent = facturas;
   document.getElementById('sum-lineas').textContent = rows.length;
   document.getElementById('sum-vendors').textContent = vendors.length;
