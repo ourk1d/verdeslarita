@@ -684,7 +684,7 @@ function prepareForPrint(){
     span.textContent = el.tagName==='SELECT'
       ? (el.options[el.selectedIndex]?.text||'')
       : el.value;
-    span.style.fontSize = '13px';
+    span.style.fontSize = window.getComputedStyle(el).fontSize;
     span.style.color = '#000';
     span.style.display = 'none';
     el.parentNode.insertBefore(span, el.nextSibling);
