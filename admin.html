@@ -210,7 +210,10 @@ function loadCfg(){
   // credentials are hardcoded — nothing to load
 }
 
-function fmt(n){ return '$ '+Number(n).toLocaleString('es-UY',{minimumFractionDigits:2,maximumFractionDigits:2}); }
+function fmt(n, moneda){ 
+  const sym = moneda === 'USD' ? 'U$S\u00a0' : '$\u00a0';
+  return sym+Number(n).toLocaleString('es-UY',{minimumFractionDigits:2,maximumFractionDigits:2}); 
+}
 function loading(id,cols){ document.getElementById(id).innerHTML='<tr><td colspan="'+cols+'" class="state"><span class="loading-dot"></span><span class="loading-dot"></span><span class="loading-dot"></span></td></tr>'; }
 function errRow(id,cols,msg){ document.getElementById(id).innerHTML='<tr><td colspan="'+cols+'" class="state" style="color:var(--danger)">'+msg+'</td></tr>'; }
 
@@ -268,7 +271,7 @@ function renderVentas(rows,month){
     '<td><span style="font-size:12px;color:var(--muted)">'+empNombre(r.empresa)+'</span></td>'+
     '<td><span class="badge-v">'+(r.vendedor||'—')+'</span></td><td>'+(r.cliente||'')+'</td>'+
     '<td class="mono">'+(r.cod_producto||'')+'</td><td>'+(r.descripcion||'')+'</td>'+
-    '<td>'+(r.cantidad||'')+'</td><td>'+fmt(r.precio_unit||0)+'</td><td>'+fmt(r.subtotal||0)+'</td>'+
+    '<td>'+fmt(r.precio_unit||0,r.moneda)+'</td><td>'+fmt(r.subtotal||0,r.moneda)+'</td>'+
     '<td><button onclick="confirmDelete(event)" data-id="'+r.id+'" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:16px;padding:0 4px;opacity:.6" title="Eliminar fila">×</button></td></tr>'
   ).join('') : '<tr><td colspan="11" class="state">Sin registros.</td></tr>';
 }
