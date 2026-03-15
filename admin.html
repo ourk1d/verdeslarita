@@ -157,6 +157,13 @@ const SUPABASE_KEY = 'sb_publishable_XsYusr0JjHAtFC4fl4CD-w_9d5iIwDH';
 const APP_SECRET = 'paddyspubcastolo10';
 let sbUrl = SUPABASE_URL, sbKey = SUPABASE_KEY, appSecret = APP_SECRET, ventasRows = [], artRows = [];
 
+const EMPRESAS = {
+  'empresa1': 'LARITA SRL',
+  'empresa2': 'VERFLEX SAS',
+  'empresa3': 'RITA MEDINA'
+};
+function empNombre(key){ return EMPRESAS[key] || key || '—'; }
+
 function doLogin(){
   if(document.getElementById('pwd-input').value === ADMIN_PASSWORD){
     sessionStorage.setItem('admin-ok','1');
@@ -258,7 +265,7 @@ function renderVentas(rows,month){
 
   document.getElementById('ventas-tbody').innerHTML = rows.length ? rows.map(r=>
     '<tr><td class="mono">'+(r.num||'')+'</td><td>'+(r.fecha||'')+'</td>'+
-    '<td><span style="font-size:12px;color:var(--muted)">'+(r.empresa||'—')+'</span></td>'+
+    '<td><span style="font-size:12px;color:var(--muted)">'+empNombre(r.empresa)+'</span></td>'+
     '<td><span class="badge-v">'+(r.vendedor||'—')+'</span></td><td>'+(r.cliente||'')+'</td>'+
     '<td class="mono">'+(r.cod_producto||'')+'</td><td>'+(r.descripcion||'')+'</td>'+
     '<td>'+(r.cantidad||'')+'</td><td>'+fmt(r.precio_unit||0)+'</td><td>'+fmt(r.subtotal||0)+'</td>'+
@@ -275,7 +282,7 @@ function populateVendorFilter(rows){
   const esel = document.getElementById('fil-empresa');
   const ecur = esel.value;
   const es = [...new Set(rows.map(r=>r.empresa).filter(Boolean))].sort();
-  esel.innerHTML = '<option value="">Todas</option>'+es.map(e=>'<option>'+e+'</option>').join('');
+  esel.innerHTML = '<option value="">Todas</option>'+es.map(e=>'<option value="'+e+'">'+empNombre(e)+'</option>').join('');
   if(ecur) esel.value = ecur;
 }
 
