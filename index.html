@@ -679,18 +679,15 @@ function reprintInvoice(){
 
 function prepareForPrint(){
   document.querySelectorAll('.main input:not([type=hidden]), .main select, .main textarea').forEach(el=>{
-    const span = document.createElement('span');
-    span.className = 'print-replace';
-    span.textContent = el.tagName==='SELECT'
-      ? (el.options[el.selectedIndex]?.text||'')
-      : el.value;
-    span.style.fontSize = window.getComputedStyle(el.parentNode).fontSize;
-    span.style.fontFamily = window.getComputedStyle(el.parentNode).fontFamily;
-    span.style.fontWeight = window.getComputedStyle(el.parentNode).fontWeight;
-    span.style.color = '#000';
-    span.style.display = 'none';
-    el.parentNode.insertBefore(span, el.nextSibling);
-    el.dataset.printHidden = '1';
+  const span = document.createElement('span');
+  span.className = 'print-replace';
+  span.textContent = el.tagName==='SELECT'
+    ? (el.options[el.selectedIndex]?.text||'')
+    : el.value;
+  span.style.color = '#000';
+  span.style.display = 'none';
+      el.parentNode.insertBefore(span, el.nextSibling);
+      el.dataset.printHidden = '1';
   });
   document.querySelectorAll('.print-replace').forEach(s=>s.style.display='inline');
   document.querySelectorAll('[data-print-hidden]').forEach(el=>el.style.visibility='hidden');
