@@ -602,7 +602,7 @@ async function saveAndPrint(){
   const d = {
     empresa:       document.getElementById('empresa').value,
     num:           document.getElementById('inv-num').value.trim(),
-    date: (()=>{ const v=document.getElementById('inv-date').value; if(!v) return ''; const [y,m,d]=v.split('-'); return d+'/'+m+'/'+y; })(),
+    date: document.getElementById('inv-date').value,
     vendedor:      document.getElementById('vendedor').value,
     moneda:        document.getElementById('moneda').value,
     metodo_pago:   document.getElementById('metodo-pago').value,
