@@ -219,8 +219,7 @@ function errRow(id,cols,msg){ document.getElementById(id).innerHTML='<tr><td col
 
 async function loadVentas(){
   if(!sbUrl||!sbKey||!appSecret){ alert('Credenciales no configuradas.'); return; }
-  loading('ventas-tbody',8)
-  errRow('ventas-tbody',8)
+  loading('ventas-tbody',8);
   const month = document.getElementById('fil-month').value;
   const vendor = document.getElementById('fil-vendor').value;
   const empresa = document.getElementById('fil-empresa').value;
