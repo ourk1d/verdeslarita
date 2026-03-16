@@ -119,7 +119,7 @@ tr:hover td{background:var(--bg)}
     <div class="sec-title">Detalle de facturas</div>
     <div class="table-wrap">
       <table>
-        <thead><tr><th>N° Factura</th><th>Fecha</th><th>Empresa</th><th>Vendedor</th><th>Cliente</th><th>Código</th><th>Descripción</th><th>Cant.</th><th>Precio</th><th>Subtotal</th><th></th></tr></thead>
+        <thead><tr><th></th><th>N° Factura</th><th>Fecha</th><th>Empresa</th><th>Vendedor</th><th>Cliente</th><th>Total</th><th></th></tr></thead>
         <tbody id="ventas-tbody"><tr><td colspan="9" class="state">Seleccioná un mes y hacé clic en Actualizar.</td></tr></tbody>
       </table>
     </div>
@@ -219,7 +219,8 @@ function errRow(id,cols,msg){ document.getElementById(id).innerHTML='<tr><td col
 
 async function loadVentas(){
   if(!sbUrl||!sbKey||!appSecret){ alert('Credenciales no configuradas.'); return; }
-  loading('ventas-tbody',11);
+  loading('ventas-tbody',8)
+  errRow('ventas-tbody',8,
   const month = document.getElementById('fil-month').value;
   const vendor = document.getElementById('fil-vendor').value;
   const empresa = document.getElementById('fil-empresa').value;
@@ -268,14 +269,52 @@ function renderVentas(rows,month){
     '<div class="vendor-bar-wrap"><div class="vendor-bar" style="width:'+Math.round(d.total/maxT*100)+'%"></div></div></div>'
   ).join('') || '<div style="color:var(--muted);font-size:13px">Sin datos.</div>';
 
-  document.getElementById('ventas-tbody').innerHTML = rows.length ? rows.map(r=>
-    '<tr><td class="mono">'+(r.num||'')+'</td><td>'+(r.fecha||'')+'</td>'+
-    '<td><span style="font-size:12px;color:var(--muted)">'+empNombre(r.empresa)+'</span></td>'+
-    '<td><span class="badge-v">'+(r.vendedor||'—')+'</span></td><td>'+(r.cliente||'')+'</td>'+
-    '<td class="mono">'+(r.cod_producto||'')+'</td><td>'+(r.descripcion||'')+'</td>'+
-    '<td>'+(r.cantidad||0)+'</td><td>'+fmt(r.precio_unit||0,r.moneda)+'</td><td>'+fmt(r.subtotal||0,r.moneda)+'</td>'+
-    '<td><button onclick="confirmDelete(event)" data-id="'+r.id+'" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:16px;padding:0 4px;opacity:.6" title="Eliminar fila">×</button></td></tr>'
-  ).join('') : '<tr><td colspan="11" class="state">Sin registros.</td></tr>';
+  // Agrupar por número de factura
+  const byFac = {};
+  rows.forEach(r=>{
+    if(!byFac[r.num]) byFac[r.num]={
+      num:r.num, fecha:r.fecha, empresa:r.empresa,
+      vendedor:r.vendedor, cliente:r.cliente,
+      moneda:r.moneda, total:r.total,
+      lines:[], id:r.id
+    };
+    byFac[r.num].lines.push(r);
+  });
+  const facturasList = Object.values(byFac).sort((a,b)=>b.num.localeCompare(a.num));
+
+  document.getElementById('ventas-tbody').innerHTML = facturasList.length ? facturasList.map(f=>`
+    <tr style="cursor:pointer;border-bottom:0.5px solid var(--border)" onclick="toggleLines('${f.num}')">
+      <td style="width:28px;text-align:center;color:var(--muted);font-size:12px" id="arrow-${f.num}">▶</td>
+      <td class="mono" style="font-weight:500">${f.num}</td>
+      <td style="font-size:12px">${f.fecha||''}</td>
+      <td style="font-size:12px;color:var(--muted)">${empNombre(f.empresa)}</td>
+      <td><span class="badge-v">${f.vendedor||'—'}</span></td>
+      <td>${f.cliente||''}</td>
+      <td style="font-weight:500">${fmt(parseFloat(f.lines.reduce((a,l)=>a+(parseFloat(l.subtotal)||0),0)),f.moneda)}</td>
+      <td><button onclick="event.stopPropagation();confirmDelete(event)" data-id="${f.id}" style="background:none;border:none;cursor:pointer;color:#c0392b;font-size:16px;padding:0 4px;opacity:.6">×</button></td>
+    </tr>
+    <tr id="lines-${f.num}" style="display:none">
+      <td colspan="8" style="padding:0 0 8px 28px;background:var(--bg)">
+        <table style="width:100%;font-size:12px;border-collapse:collapse">
+          <thead><tr style="color:var(--muted)">
+            <th style="padding:6px 8px;text-align:left;font-weight:500">Código</th>
+            <th style="padding:6px 8px;text-align:left;font-weight:500">Descripción</th>
+            <th style="padding:6px 8px;text-align:right;font-weight:500">Cant.</th>
+            <th style="padding:6px 8px;text-align:right;font-weight:500">Precio unit.</th>
+            <th style="padding:6px 8px;text-align:right;font-weight:500">Subtotal</th>
+          </tr></thead>
+          <tbody>${f.lines.map(l=>`
+            <tr style="border-top:0.5px solid var(--border)">
+              <td style="padding:5px 8px" class="mono">${l.cod_producto||''}</td>
+              <td style="padding:5px 8px">${l.descripcion||''}</td>
+              <td style="padding:5px 8px;text-align:right">${l.cantidad||''}</td>
+              <td style="padding:5px 8px;text-align:right">${fmt(l.precio_unit||0,l.moneda)}</td>
+              <td style="padding:5px 8px;text-align:right">${fmt(l.subtotal||0,l.moneda)}</td>
+            </tr>`).join('')}
+          </tbody>
+        </table>
+      </td>
+    </tr>`).join('') : '<tr><td colspan="8" class="state">Sin registros.</td></tr>';
 }
 
 function populateVendorFilter(rows){
@@ -376,6 +415,14 @@ async function deleteRow(id){
   }catch(e){
     alert('Error de conexión: '+e.message);
   }
+}
+
+function toggleLines(num){
+  const row = document.getElementById('lines-'+num);
+  const arrow = document.getElementById('arrow-'+num);
+  const open = row.style.display === 'table-row';
+  row.style.display = open ? 'none' : 'table-row';
+  arrow.textContent = open ? '▶' : '▼';
 }
 
 function downloadCSV(rows,filename){
