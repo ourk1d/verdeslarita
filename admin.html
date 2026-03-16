@@ -164,6 +164,8 @@ const EMPRESAS = {
 };
 function empNombre(key){ return EMPRESAS[key] || key || '—'; }
 
+function fmtFecha(f){ if(!f) return ''; if(f.includes('/')) return f; const [y,m,d]=f.split('-'); return d+'/'+m+'/'+y; }
+
 function doLogin(){
   if(document.getElementById('pwd-input').value === ADMIN_PASSWORD){
     sessionStorage.setItem('admin-ok','1');
@@ -295,7 +297,7 @@ document.getElementById('ventas-tbody').innerHTML = facturasList.length ? factur
     return '<tr style="cursor:pointer;border-bottom:0.5px solid var(--border)" onclick="toggleLines(\''+f.num+'\')">'+
       '<td style="width:28px;text-align:center;color:var(--muted);font-size:12px" id="arrow-'+f.num+'">▶</td>'+
       '<td class="mono" style="font-weight:500">'+f.num+'</td>'+
-      '<td style="font-size:12px">'+(f.fecha||'')+'</td>'+
+      '<td style="font-size:12px">'+fmtFecha(f.fecha)+'</td>'+
       '<td style="font-size:12px;color:var(--muted)">'+empNombre(f.empresa)+'</td>'+
       '<td><span class="badge-v">'+(f.vendedor||'—')+'</span></td>'+
       '<td>'+(f.cliente||'')+'</td>'+
@@ -336,7 +338,7 @@ function populateEmpresaFilter(){
 function exportVentasCSV(){
   if(!ventasRows.length) return;
   const h = ['N° Factura','Fecha','Empresa','Vendedor','Cliente','CI','Dirección','Teléfono','Código','Descripción','Cantidad','Precio Unit.','Subtotal'];
-  const r = ventasRows.map(r=>[r.num,r.fecha,r.empresa,r.vendedor,r.cliente,r.ci,r.direccion,r.telefono,r.cod_producto,r.descripcion,r.cantidad,r.precio_unit,r.subtotal]);
+  const r = ventasRows.map(r=>[r.num,fmtFecha(r.fecha),empNombre(r.empresa),r.vendedor,r.cliente,r.ci,r.direccion,r.telefono,r.cod_producto,r.descripcion,r.cantidad,r.precio_unit,r.subtotal]);
   downloadCSV([h,...r],'ventas_'+(document.getElementById('fil-month').value||'completo')+'.csv');
 }
 
