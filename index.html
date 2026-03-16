@@ -701,7 +701,7 @@ function reprintTicket(){
   const fecha = document.getElementById('inv-date').value;
   const fechaFmt = fecha ? (()=>{ const [y,m,d]=fecha.split('-'); return d+'/'+m+'/'+y; })() : '';
   const vendedor = document.getElementById('vendedor').value;
-  const moneda = document.getElementById('moneda').value === 'USD' ? 'Dólares (U$S)' : 'Pesos uruguayos ($)';
+  const moneda = document.getElementById('moneda').value === 'USD' ? 'U$S' : '$';
   const metodo = document.getElementById('metodo-pago').value;
   const cliente = document.getElementById('cli-name').value;
   const ci = document.getElementById('cli-rut').value;
@@ -714,75 +714,71 @@ function reprintTicket(){
 
   const linesHtml = lines.map(l=>{
     const sub = (parseFloat(l.qty)||0)*(parseFloat(l.price)||0);
-    return `<tr>
-      <td style="padding:3px 0;font-family:monospace;font-size:10px">${l.cod}</td>
-      <td style="padding:3px 4px;font-size:10px">${l.desc}</td>
-      <td style="padding:3px 0;text-align:center;font-size:10px">${l.qty}</td>
-      <td style="padding:3px 0;text-align:right;font-size:10px">${sym}${sub.toLocaleString('es-UY',{minimumFractionDigits:2})}</td>
-    </tr>`;
+    const subFmt = sym+sub.toLocaleString('es-UY',{minimumFractionDigits:2});
+    return '<div style="padding:4px 0;border-bottom:1px dotted #ddd">'+
+      '<div style="font-weight:600;font-size:11px">'+l.cod+' — '+l.desc+'</div>'+
+      '<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:2px">'+
+        '<span style="color:#555">Cant: '+l.qty+' x '+sym+(parseFloat(l.price)||0).toLocaleString('es-UY',{minimumFractionDigits:2})+'</span>'+
+        '<span style="font-weight:600">'+subFmt+'</span>'+
+      '</div>'+
+    '</div>';
   }).join('');
 
-  const win = window.open('','_blank','width=400,height=700');
+  const win = window.open('','_blank','width=420,height=750');
   win.document.write(`<!DOCTYPE html>
 <html><head><meta charset="UTF-8"/>
+<title>Ticket</title>
 <style>
-  *{box-sizing:border-box;margin:0;padding:0}
-  @page{size:100mm 148mm;margin:4mm}
-  body{font-family:'DM Sans',Arial,sans-serif;font-size:11px;color:#000;width:92mm}
-  .logo{max-height:28px;max-width:70px;object-fit:contain;display:block;margin-bottom:4px}
-  .empresa-nombre{font-size:12px;font-weight:700;margin-bottom:2px}
-  .empresa-sub{font-size:9px;color:#444;margin-bottom:1px}
-  .divider{border:none;border-top:1px dashed #aaa;margin:6px 0}
-  .row{display:flex;justify-content:space-between;margin-bottom:3px;font-size:10px}
-  .label{color:#555;margin-right:6px;white-space:nowrap}
-  .val{font-weight:500;text-align:right}
-  table{width:100%;border-collapse:collapse}
-  thead td{font-size:8px;color:#555;text-transform:uppercase;padding:2px 0;border-bottom:1px solid #ccc}
-  .total-row{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-top:6px;padding-top:6px;border-top:1px solid #000}
-  .obs{font-size:9px;color:#444;margin-top:4px;font-style:italic}
-  .garantia{font-size:8px;color:#888;margin-top:8px;padding-top:6px;border-top:1px dashed #ccc;line-height:1.4}
-  .garantia strong{display:block;margin-bottom:2px;color:#555}
-  .no-valor{font-size:8px;color:#aaa;text-align:center;margin-top:6px}
+*{box-sizing:border-box;margin:0;padding:0}
+@page{size:100mm 148mm;margin:5mm}
+body{font-family:Arial,sans-serif;font-size:12px;color:#000;max-width:90mm}
 </style>
 </head><body>
-  ${emp.logo ? `<img src="${emp.logo}" class="logo"/>` : ''}
-  <div class="empresa-nombre">${emp.nombre||''}</div>
-  ${emp.rut ? `<div class="empresa-sub">RUT: ${emp.rut}</div>` : ''}
-  ${emp.direccion ? `<div class="empresa-sub">${emp.direccion}</div>` : ''}
-  ${emp.telefono ? `<div class="empresa-sub">${emp.telefono}</div>` : ''}
 
-  <hr class="divider"/>
-  <div class="row"><span class="label">N° Factura:</span><span class="val">${num}</span></div>
-  <div class="row"><span class="label">Fecha:</span><span class="val">${fechaFmt}</span></div>
-  <div class="row"><span class="label">Vendedor:</span><span class="val">${vendedor}</span></div>
-  <div class="row"><span class="label">Moneda:</span><span class="val">${moneda}</span></div>
-  <div class="row"><span class="label">Método de pago:</span><span class="val">${metodo}</span></div>
+<div style="text-align:center;margin-bottom:8px">
+  ${emp.logo ? '<img src="'+emp.logo+'" style="max-height:36px;max-width:80px;object-fit:contain;display:block;margin:0 auto 4px"/>' : ''}
+  <div style="font-size:14px;font-weight:700">${emp.nombre||''}</div>
+  ${emp.rut ? '<div style="font-size:10px;color:#444">RUT: '+emp.rut+'</div>' : ''}
+  ${emp.direccion ? '<div style="font-size:10px;color:#444">'+emp.direccion+'</div>' : ''}
+  ${emp.telefono ? '<div style="font-size:10px;color:#444">Tel: '+emp.telefono+'</div>' : ''}
+</div>
 
-  <hr class="divider"/>
-  <div class="row"><span class="label">Cliente:</span><span class="val">${cliente}</span></div>
-  ${ci ? `<div class="row"><span class="label">CI:</span><span class="val">${ci}</span></div>` : ''}
-  ${tel ? `<div class="row"><span class="label">Teléfono:</span><span class="val">${tel}</span></div>` : ''}
-  ${dir ? `<div class="row"><span class="label">Dirección:</span><span class="val">${dir}</span></div>` : ''}
+<div style="border-top:2px solid #000;border-bottom:1px dashed #999;padding:5px 0;margin-bottom:6px">
+  <div style="font-size:11px"><b>N° Factura:</b> ${num}</div>
+  <div style="font-size:11px"><b>Fecha:</b> ${fechaFmt}</div>
+  <div style="font-size:11px"><b>Vendedor:</b> ${vendedor}</div>
+  <div style="font-size:11px"><b>Pago:</b> ${metodo} — ${moneda}</div>
+</div>
 
-  <hr class="divider"/>
-  <table>
-    <thead><tr>
-      <td>Cód.</td><td>Descripción</td><td style="text-align:center">Cant.</td><td style="text-align:right">Subtotal</td>
-    </tr></thead>
-    <tbody>${linesHtml}</tbody>
-  </table>
-  <div class="total-row"><span>Total</span><span>${total}</span></div>
+<div style="border-bottom:1px dashed #999;padding:5px 0;margin-bottom:6px">
+  <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Cliente</div>
+  <div style="font-size:12px;font-weight:600">${cliente}</div>
+  ${ci ? '<div style="font-size:10px">CI: '+ci+'</div>' : ''}
+  ${tel ? '<div style="font-size:10px">Tel: '+tel+'</div>' : ''}
+  ${dir ? '<div style="font-size:10px">Dir: '+dir+'</div>' : ''}
+</div>
 
-  ${obs ? `<div class="obs">Obs: ${obs}</div>` : ''}
+<div style="border-bottom:1px dashed #999;padding:5px 0;margin-bottom:6px">
+  <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Productos</div>
+  ${linesHtml}
+</div>
 
-  <div class="garantia">
-    <strong>Condiciones de garantía</strong>
-    Colchones que presenten manchas o roturas en su tapizado no tienen garantía bajo ningún concepto. Electrodomésticos que hayan sido abiertos, o presenten signos de golpes o alteraciones externas, pierden su garantía.
-  </div>
+<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:5px 0;border-bottom:2px solid #000;margin-bottom:6px">
+  <span>TOTAL</span><span>${total}</span>
+</div>
 
-  <div class="no-valor">Documento sin valor fiscal — No es CFE según normativa DGI</div>
+${obs ? '<div style="font-size:10px;color:#444;font-style:italic;margin-bottom:6px;padding:4px 0;border-bottom:1px dashed #ddd">Obs: '+obs+'</div>' : ''}
 
-<script>window.onload=function(){ window.print(); window.onafterprint=function(){ window.close(); }; }<\/script>
+<div style="font-size:8px;color:#888;line-height:1.4;margin-bottom:4px">
+  <b style="display:block;color:#666;margin-bottom:2px">Condiciones de garantía</b>
+  Colchones con manchas o roturas en tapizado no tienen garantía. Electrodomésticos abiertos o con signos de golpes pierden su garantía.
+</div>
+
+<div style="font-size:8px;color:#aaa;text-align:center;padding-top:4px;border-top:1px dashed #ddd">
+  Documento sin valor fiscal — No es CFE (DGI)
+</div>
+
+<script>window.onload=function(){ setTimeout(function(){ window.print(); window.onafterprint=function(){ window.close(); }; },300); }<\/script>
 </body></html>`);
   win.document.close();
 }
