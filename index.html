@@ -197,6 +197,15 @@ input:disabled,select:disabled,textarea:disabled{
 </style>
 </head>
 <body>
+<div id="vendor-login" style="display:flex;align-items:center;justify-content:center;min-height:100vh;position:fixed;inset:0;background:var(--bg);z-index:999">
+  <div style="background:var(--surface);border:0.5px solid var(--border-md);border-radius:var(--radius-lg);padding:2rem;width:300px">
+    <h2 style="font-size:18px;font-weight:500;margin-bottom:6px">Acceso</h2>
+    <p style="font-size:13px;color:var(--muted);margin-bottom:20px">Ingresá la contraseña para continuar.</p>
+    <input type="password" id="vendor-pwd" placeholder="Contraseña" style="width:100%;margin-bottom:10px" onkeydown="if(event.key==='Enter')doVendorLogin()"/>
+    <button onclick="doVendorLogin()" style="width:100%;padding:8px;background:var(--text);color:#fff;border:none;border-radius:var(--radius);font-size:14px;cursor:pointer">Entrar</button>
+    <div id="vendor-err" style="font-size:12px;color:var(--danger);margin-top:8px;display:none">Contraseña incorrecta.</div>
+  </div>
+</div>
 
 <div class="shell">
   <!-- ===== MAIN PANEL ===== -->
@@ -432,6 +441,7 @@ input:disabled,select:disabled,textarea:disabled{
 
 <script>
 const STORAGE_KEY = 'facturas-v3';
+const VENDOR_PASSWORD = '12qwaszx';
 const SUPABASE_URL = 'https://inzjpzzucwqieoxirqvi.supabase.co';
 const SUPABASE_KEY = 'sb_publishable_XsYusr0JjHAtFC4fl4CD-w_9d5iIwDH';
 const APP_SECRET = 'paddyspubcastolo10';
@@ -592,7 +602,7 @@ async function saveAndPrint(){
   const d = {
     empresa:       document.getElementById('empresa').value,
     num:           document.getElementById('inv-num').value.trim(),
-    date:          document.getElementById('inv-date').value,
+    date: (()=>{ const v=document.getElementById('inv-date').value; if(!v) return ''; const [y,m,d]=v.split('-'); return d+'/'+m+'/'+y; })(),
     vendedor:      document.getElementById('vendedor').value,
     moneda:        document.getElementById('moneda').value,
     metodo_pago:   document.getElementById('metodo-pago').value,
@@ -1002,6 +1012,20 @@ function loadAll(){
 // ---- Init ----
 document.getElementById('inv-date').value=new Date().toISOString().split('T')[0];
 addLine();
+function doVendorLogin(){
+  if(document.getElementById('vendor-pwd').value === VENDOR_PASSWORD){
+    sessionStorage.setItem('vendor-ok','1');
+    document.getElementById('vendor-login').style.display='none';
+  } else {
+    document.getElementById('vendor-err').style.display='block';
+  }
+}
+
+if(sessionStorage.getItem('vendor-ok')!=='1'){
+  document.getElementById('vendor-login').style.display='flex';
+} else {
+  document.getElementById('vendor-login').style.display='none';
+}
 loadAll();
 initInvoiceNumber();
 </script>
