@@ -238,7 +238,8 @@ input:disabled,select:disabled,textarea:disabled{
     <div id="form-locked-bar" class="no-print">
       <span id="locked-msg">Factura guardada</span>
       <div style="display:flex;gap:8px">
-        <button class="btn btn-sm" onclick="reprintInvoice()">Reimprimir</button>
+        <button class="btn btn-sm" onclick="reprintInvoice()">Reimprimir A4</button>
+        <button class="btn btn-sm" onclick="reprintTicket()">Imprimir ticket</button>
         <button class="btn btn-primary btn-sm" onclick="newInvoice()">Nueva factura</button>
       </div>
     </div>
@@ -692,10 +693,38 @@ function unlockForm(){
   document.querySelector('.header-actions').style.display='flex';
 }
 
+  function reprintTicket(){
+  updatePrintHeader();
+  const style = document.createElement('style');
+  style.id = 'ticket-style';
+  style.textContent = `
+    @media print {
+      @page { size: 100mm 148mm; margin: 4mm; }
+      body { font-size: 11px; }
+      .print-header { flex-direction: column; align-items: flex-start; gap: 6px; }
+      .print-company-info { text-align: left; }
+      .print-company-info .co-name { font-size: 13px; }
+      .print-logo { max-height: 36px; max-width: 80px; }
+      .sec-label { font-size: 9px; }
+      input, select, textarea { font-size: 11px !important; }
+      .line-headers { font-size: 8px; }
+      .line-row { grid-template-columns: 55px 1fr 35px 55px; }
+      .totals-block { margin-top: 6px; padding-top: 6px; }
+      .total-row { font-size: 11px; }
+      .total-row.grand { font-size: 13px; }
+      .print-footer { font-size: 9px; margin-top: 10px; }
+    }
+  `;
+  document.head.appendChild(style);
+  window.print();
+  setTimeout(()=>{ const s=document.getElementById('ticket-style'); if(s) s.remove(); }, 1000);
+}
+
 function reprintInvoice(){
   updatePrintHeader();
   window.print();
 }
+
 
 function newInvoice(){
   unlockForm();
