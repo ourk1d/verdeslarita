@@ -698,23 +698,41 @@ function unlockForm(){
   const style = document.createElement('style');
   style.id = 'ticket-style';
   style.textContent = `
-    @media print {
-      @page { size: 100mm 148mm; margin: 4mm; }
-      body { font-size: 11px; }
-      .print-header { flex-direction: column; align-items: flex-start; gap: 6px; }
-      .print-company-info { text-align: left; }
-      .print-company-info .co-name { font-size: 13px; }
-      .print-logo { max-height: 36px; max-width: 80px; }
-      .sec-label { font-size: 9px; }
-      input, select, textarea { font-size: 11px !important; }
-      .line-headers { font-size: 8px; }
-      .line-row { grid-template-columns: 55px 1fr 35px 55px; }
-      .totals-block { margin-top: 6px; padding-top: 6px; }
-      .total-row { font-size: 11px; }
-      .total-row.grand { font-size: 13px; }
-      .print-footer { font-size: 9px; margin-top: 10px; }
-    }
-  `;
+  @media print {
+    @page { size: 100mm 148mm; margin: 3mm 4mm; }
+    body { font-size: 10px; }
+    .shell { display: block; }
+    .sidebar { display: none; }
+    .no-print { display: none !important; }
+    .main { padding: 0; border: none; }
+    .print-header { flex-direction: column; align-items: flex-start; gap: 4px; padding-bottom: 8px; }
+    .print-company-info { text-align: left; }
+    .print-company-info .co-name { font-size: 11px; }
+    .print-company-info .co-rut, .print-company-info .co-addr, .print-company-info .co-phone { font-size: 9px; }
+    .print-logo { max-height: 28px; max-width: 60px; }
+    .sec-label { font-size: 8px; margin-bottom: 4px; }
+    label { font-size: 9px; }
+    input, select, textarea { font-size: 10px !important; -webkit-text-fill-color: #000 !important; }
+    input:disabled, select:disabled { -webkit-text-fill-color: #000 !important; opacity: 1 !important; }
+    .row { margin-bottom: 2px; }
+    .row-2 { grid-template-columns: 1fr 1fr; }
+    .divider { margin: 5px 0; }
+    .section { margin-bottom: 6px; }
+    .line-headers { font-size: 8px; grid-template-columns: 40px 1fr 30px 45px; }
+    .line-row { grid-template-columns: 40px 1fr 30px 45px; margin-bottom: 3px; gap: 4px; }
+    .line-row input { font-size: 9px !important; padding: 1px 0 !important; }
+    .btn-del { display: none; }
+    .totals-block { margin-top: 5px; padding-top: 5px; }
+    .total-row { font-size: 10px; }
+    .total-row.grand { font-size: 11px; }
+    #observaciones { display: none !important; }
+    #obs-print { display: block !important; font-size: 9px; }
+    .print-footer { font-size: 8px; margin-top: 8px; padding-top: 6px; }
+    #add-line-btn { display: none; }
+    #sync-status { display: none !important; }
+    #inv-num-display { font-size: 10px !important; }
+  }
+`;
   document.head.appendChild(style);
   window.print();
   setTimeout(()=>{ const s=document.getElementById('ticket-style'); if(s) s.remove(); }, 1000);
