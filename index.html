@@ -693,49 +693,98 @@ function unlockForm(){
   document.querySelector('.header-actions').style.display='flex';
 }
 
-  function reprintTicket(){
+function reprintTicket(){
   updatePrintHeader();
-  const style = document.createElement('style');
-  style.id = 'ticket-style';
-  style.textContent = `
-  @media print {
-    @page { size: 100mm 148mm; margin: 3mm 4mm; }
-    body { font-size: 10px; }
-    .shell { display: block; }
-    .sidebar { display: none; }
-    .no-print { display: none !important; }
-    .main { padding: 0; border: none; }
-    .print-header { flex-direction: column; align-items: flex-start; gap: 4px; padding-bottom: 8px; }
-    .print-company-info { text-align: left; }
-    .print-company-info .co-name { font-size: 11px; }
-    .print-company-info .co-rut, .print-company-info .co-addr, .print-company-info .co-phone { font-size: 9px; }
-    .print-logo { max-height: 28px; max-width: 60px; }
-    .sec-label { font-size: 8px; margin-bottom: 4px; }
-    label { font-size: 9px; }
-    input, select, textarea { font-size: 10px !important; -webkit-text-fill-color: #000 !important; }
-    input:disabled, select:disabled { -webkit-text-fill-color: #000 !important; opacity: 1 !important; }
-    .row { margin-bottom: 2px; }
-    .row-2 { grid-template-columns: 1fr 1fr; }
-    .divider { margin: 5px 0; }
-    .section { margin-bottom: 6px; }
-    .line-headers { font-size: 8px; grid-template-columns: 40px 1fr 30px 45px; }
-    .line-row { grid-template-columns: 40px 1fr 30px 45px; margin-bottom: 3px; gap: 4px; }
-    .line-row input { font-size: 9px !important; padding: 1px 0 !important; }
-    .btn-del { display: none; }
-    .totals-block { margin-top: 5px; padding-top: 5px; }
-    .total-row { font-size: 10px; }
-    .total-row.grand { font-size: 11px; }
-    #observaciones { display: none !important; }
-    #obs-print { display: block !important; font-size: 9px; }
-    .print-footer { font-size: 8px; margin-top: 8px; padding-top: 6px; }
-    #add-line-btn { display: none; }
-    #sync-status { display: none !important; }
-    #inv-num-display { font-size: 10px !important; }
-  }
-`;
-  document.head.appendChild(style);
-  window.print();
-  setTimeout(()=>{ const s=document.getElementById('ticket-style'); if(s) s.remove(); }, 1000);
+  const empKey = document.getElementById('empresa').value;
+  const emp = EMPRESAS[empKey] || {};
+  const num = document.getElementById('inv-num').value;
+  const fecha = document.getElementById('inv-date').value;
+  const fechaFmt = fecha ? (()=>{ const [y,m,d]=fecha.split('-'); return d+'/'+m+'/'+y; })() : '';
+  const vendedor = document.getElementById('vendedor').value;
+  const moneda = document.getElementById('moneda').value === 'USD' ? 'Dólares (U$S)' : 'Pesos uruguayos ($)';
+  const metodo = document.getElementById('metodo-pago').value;
+  const cliente = document.getElementById('cli-name').value;
+  const ci = document.getElementById('cli-rut').value;
+  const tel = document.getElementById('cli-phone').value;
+  const dir = document.getElementById('cli-addr').value;
+  const obs = document.getElementById('observaciones').value.trim();
+  const lines = getLineData();
+  const sym = document.getElementById('moneda').value === 'USD' ? 'U$S ' : '$ ';
+  const total = document.getElementById('grand-total').textContent;
+
+  const linesHtml = lines.map(l=>{
+    const sub = (parseFloat(l.qty)||0)*(parseFloat(l.price)||0);
+    return `<tr>
+      <td style="padding:3px 0;font-family:monospace;font-size:10px">${l.cod}</td>
+      <td style="padding:3px 4px;font-size:10px">${l.desc}</td>
+      <td style="padding:3px 0;text-align:center;font-size:10px">${l.qty}</td>
+      <td style="padding:3px 0;text-align:right;font-size:10px">${sym}${sub.toLocaleString('es-UY',{minimumFractionDigits:2})}</td>
+    </tr>`;
+  }).join('');
+
+  const win = window.open('','_blank','width=400,height=700');
+  win.document.write(`<!DOCTYPE html>
+<html><head><meta charset="UTF-8"/>
+<style>
+  *{box-sizing:border-box;margin:0;padding:0}
+  @page{size:100mm 148mm;margin:4mm}
+  body{font-family:'DM Sans',Arial,sans-serif;font-size:11px;color:#000;width:92mm}
+  .logo{max-height:28px;max-width:70px;object-fit:contain;display:block;margin-bottom:4px}
+  .empresa-nombre{font-size:12px;font-weight:700;margin-bottom:2px}
+  .empresa-sub{font-size:9px;color:#444;margin-bottom:1px}
+  .divider{border:none;border-top:1px dashed #aaa;margin:6px 0}
+  .row{display:flex;justify-content:space-between;margin-bottom:3px;font-size:10px}
+  .label{color:#555;margin-right:6px;white-space:nowrap}
+  .val{font-weight:500;text-align:right}
+  table{width:100%;border-collapse:collapse}
+  thead td{font-size:8px;color:#555;text-transform:uppercase;padding:2px 0;border-bottom:1px solid #ccc}
+  .total-row{display:flex;justify-content:space-between;font-size:12px;font-weight:700;margin-top:6px;padding-top:6px;border-top:1px solid #000}
+  .obs{font-size:9px;color:#444;margin-top:4px;font-style:italic}
+  .garantia{font-size:8px;color:#888;margin-top:8px;padding-top:6px;border-top:1px dashed #ccc;line-height:1.4}
+  .garantia strong{display:block;margin-bottom:2px;color:#555}
+  .no-valor{font-size:8px;color:#aaa;text-align:center;margin-top:6px}
+</style>
+</head><body>
+  ${emp.logo ? `<img src="${emp.logo}" class="logo"/>` : ''}
+  <div class="empresa-nombre">${emp.nombre||''}</div>
+  ${emp.rut ? `<div class="empresa-sub">RUT: ${emp.rut}</div>` : ''}
+  ${emp.direccion ? `<div class="empresa-sub">${emp.direccion}</div>` : ''}
+  ${emp.telefono ? `<div class="empresa-sub">${emp.telefono}</div>` : ''}
+
+  <hr class="divider"/>
+  <div class="row"><span class="label">N° Factura:</span><span class="val">${num}</span></div>
+  <div class="row"><span class="label">Fecha:</span><span class="val">${fechaFmt}</span></div>
+  <div class="row"><span class="label">Vendedor:</span><span class="val">${vendedor}</span></div>
+  <div class="row"><span class="label">Moneda:</span><span class="val">${moneda}</span></div>
+  <div class="row"><span class="label">Método de pago:</span><span class="val">${metodo}</span></div>
+
+  <hr class="divider"/>
+  <div class="row"><span class="label">Cliente:</span><span class="val">${cliente}</span></div>
+  ${ci ? `<div class="row"><span class="label">CI:</span><span class="val">${ci}</span></div>` : ''}
+  ${tel ? `<div class="row"><span class="label">Teléfono:</span><span class="val">${tel}</span></div>` : ''}
+  ${dir ? `<div class="row"><span class="label">Dirección:</span><span class="val">${dir}</span></div>` : ''}
+
+  <hr class="divider"/>
+  <table>
+    <thead><tr>
+      <td>Cód.</td><td>Descripción</td><td style="text-align:center">Cant.</td><td style="text-align:right">Subtotal</td>
+    </tr></thead>
+    <tbody>${linesHtml}</tbody>
+  </table>
+  <div class="total-row"><span>Total</span><span>${total}</span></div>
+
+  ${obs ? `<div class="obs">Obs: ${obs}</div>` : ''}
+
+  <div class="garantia">
+    <strong>Condiciones de garantía</strong>
+    Colchones que presenten manchas o roturas en su tapizado no tienen garantía bajo ningún concepto. Electrodomésticos que hayan sido abiertos, o presenten signos de golpes o alteraciones externas, pierden su garantía.
+  </div>
+
+  <div class="no-valor">Documento sin valor fiscal — No es CFE según normativa DGI</div>
+
+<script>window.onload=function(){ window.print(); window.onafterprint=function(){ window.close(); }; }<\/script>
+</body></html>`);
+  win.document.close();
 }
 
 function reprintInvoice(){
