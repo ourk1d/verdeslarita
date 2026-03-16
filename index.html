@@ -715,12 +715,12 @@ function reprintTicket(){
   const linesHtml = lines.map(l=>{
     const sub = (parseFloat(l.qty)||0)*(parseFloat(l.price)||0);
     const subFmt = sym+sub.toLocaleString('es-UY',{minimumFractionDigits:2});
-    return '<div style="padding:4px 0;border-bottom:1px dotted #ddd">'+
-      '<div style="font-weight:600;font-size:11px">'+l.cod+' — '+l.desc+'</div>'+
-      '<div style="display:flex;justify-content:space-between;font-size:11px;margin-top:2px">'+
-        '<span style="color:#555">Cant: '+l.qty+' x '+sym+(parseFloat(l.price)||0).toLocaleString('es-UY',{minimumFractionDigits:2})+'</span>'+
-        '<span style="font-weight:600">'+subFmt+'</span>'+
-      '</div>'+
+    const priceFmt = sym+(parseFloat(l.price)||0).toLocaleString('es-UY',{minimumFractionDigits:2});
+    return '<div style="padding:8px 0;border-bottom:1px dashed #ccc">'+
+      '<div style="font-size:14px;font-weight:700;margin-bottom:3px">'+l.cod+'</div>'+
+      '<div style="font-size:13px;margin-bottom:4px">'+l.desc+'</div>'+
+      '<div style="font-size:13px;color:#444">Cant: '+l.qty+' x '+priceFmt+'</div>'+
+      '<div style="font-size:15px;font-weight:700;text-align:right;margin-top:3px">'+subFmt+'</div>'+
     '</div>';
   }).join('');
 
@@ -730,51 +730,62 @@ function reprintTicket(){
 <title>Ticket</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
-@page{size:100mm 148mm;margin:5mm}
-body{font-family:Arial,sans-serif;font-size:12px;color:#000;max-width:90mm}
+@page{size:100mm auto;margin:5mm}
+body{font-family:Arial,sans-serif;font-size:14px;color:#000;width:90mm}
+.sec-label{font-size:10px;color:#666;text-transform:uppercase;letter-spacing:.08em;margin-bottom:4px}
+.field{margin-bottom:5px}
+.field-label{font-size:11px;color:#666}
+.field-val{font-size:14px;font-weight:600}
+.sep{border:none;border-top:1px dashed #aaa;margin:8px 0}
+.sep-solid{border:none;border-top:2px solid #000;margin:8px 0}
 </style>
 </head><body>
 
-<div style="text-align:center;margin-bottom:8px">
-  ${emp.logo ? '<img src="'+emp.logo+'" style="max-height:36px;max-width:80px;object-fit:contain;display:block;margin:0 auto 4px"/>' : ''}
-  <div style="font-size:14px;font-weight:700">${emp.nombre||''}</div>
-  ${emp.rut ? '<div style="font-size:10px;color:#444">RUT: '+emp.rut+'</div>' : ''}
-  ${emp.direccion ? '<div style="font-size:10px;color:#444">'+emp.direccion+'</div>' : ''}
-  ${emp.telefono ? '<div style="font-size:10px;color:#444">Tel: '+emp.telefono+'</div>' : ''}
+<div style="text-align:center;padding-bottom:8px">
+  ${emp.logo ? '<img src="'+emp.logo+'" style="max-height:44px;max-width:85mm;object-fit:contain;display:block;margin:0 auto 6px"/>' : ''}
+  <div style="font-size:17px;font-weight:700;margin-bottom:3px">${emp.nombre||''}</div>
+  ${emp.rut ? '<div style="font-size:12px;color:#444">RUT: '+emp.rut+'</div>' : ''}
+  ${emp.direccion ? '<div style="font-size:12px;color:#444">'+emp.direccion+'</div>' : ''}
+  ${emp.telefono ? '<div style="font-size:12px;color:#444">Tel: '+emp.telefono+'</div>' : ''}
 </div>
 
-<div style="border-top:2px solid #000;border-bottom:1px dashed #999;padding:5px 0;margin-bottom:6px">
-  <div style="font-size:11px"><b>N° Factura:</b> ${num}</div>
-  <div style="font-size:11px"><b>Fecha:</b> ${fechaFmt}</div>
-  <div style="font-size:11px"><b>Vendedor:</b> ${vendedor}</div>
-  <div style="font-size:11px"><b>Pago:</b> ${metodo} — ${moneda}</div>
-</div>
+<hr class="sep-solid"/>
 
-<div style="border-bottom:1px dashed #999;padding:5px 0;margin-bottom:6px">
-  <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:3px">Cliente</div>
-  <div style="font-size:12px;font-weight:600">${cliente}</div>
-  ${ci ? '<div style="font-size:10px">CI: '+ci+'</div>' : ''}
-  ${tel ? '<div style="font-size:10px">Tel: '+tel+'</div>' : ''}
-  ${dir ? '<div style="font-size:10px">Dir: '+dir+'</div>' : ''}
-</div>
+<div class="field"><div class="field-label">N° Factura</div><div class="field-val">${num}</div></div>
+<div class="field"><div class="field-label">Fecha</div><div class="field-val">${fechaFmt}</div></div>
+<div class="field"><div class="field-label">Vendedor</div><div class="field-val">${vendedor}</div></div>
+<div class="field"><div class="field-label">Método de pago</div><div class="field-val">${metodo}</div></div>
+<div class="field"><div class="field-label">Moneda</div><div class="field-val">${moneda}</div></div>
 
-<div style="border-bottom:1px dashed #999;padding:5px 0;margin-bottom:6px">
-  <div style="font-size:10px;color:#555;text-transform:uppercase;letter-spacing:.05em;margin-bottom:4px">Productos</div>
-  ${linesHtml}
-</div>
+<hr class="sep"/>
 
-<div style="display:flex;justify-content:space-between;font-size:14px;font-weight:700;padding:5px 0;border-bottom:2px solid #000;margin-bottom:6px">
+<div class="sec-label">Cliente</div>
+<div class="field"><div class="field-label">Nombre</div><div class="field-val">${cliente}</div></div>
+${ci ? '<div class="field"><div class="field-label">CI</div><div class="field-val">'+ci+'</div></div>' : ''}
+${tel ? '<div class="field"><div class="field-label">Teléfono</div><div class="field-val">'+tel+'</div></div>' : ''}
+${dir ? '<div class="field"><div class="field-label">Dirección</div><div class="field-val">'+dir+'</div></div>' : ''}
+
+<hr class="sep"/>
+
+<div class="sec-label">Productos</div>
+${linesHtml}
+
+<hr class="sep-solid"/>
+
+<div style="display:flex;justify-content:space-between;font-size:17px;font-weight:700;padding:4px 0">
   <span>TOTAL</span><span>${total}</span>
 </div>
 
-${obs ? '<div style="font-size:10px;color:#444;font-style:italic;margin-bottom:6px;padding:4px 0;border-bottom:1px dashed #ddd">Obs: '+obs+'</div>' : ''}
+<hr class="sep-solid"/>
 
-<div style="font-size:8px;color:#888;line-height:1.4;margin-bottom:4px">
-  <b style="display:block;color:#666;margin-bottom:2px">Condiciones de garantía</b>
-  Colchones con manchas o roturas en tapizado no tienen garantía. Electrodomésticos abiertos o con signos de golpes pierden su garantía.
+${obs ? '<div style="margin:6px 0"><div class="field-label">Observaciones</div><div style="font-size:13px;font-style:italic">'+obs+'</div></div><hr class="sep"/>' : ''}
+
+<div style="margin-top:6px">
+  <div style="font-size:11px;font-weight:700;margin-bottom:3px">Condiciones de garantía</div>
+  <div style="font-size:11px;color:#444;line-height:1.5">Colchones con manchas o roturas en tapizado no tienen garantía. Electrodomésticos abiertos o con signos de golpes pierden su garantía.</div>
 </div>
 
-<div style="font-size:8px;color:#aaa;text-align:center;padding-top:4px;border-top:1px dashed #ddd">
+<div style="font-size:10px;color:#999;text-align:center;margin-top:10px;padding-top:6px;border-top:1px dashed #ccc">
   Documento sin valor fiscal — No es CFE (DGI)
 </div>
 
