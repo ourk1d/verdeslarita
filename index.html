@@ -988,7 +988,7 @@ function updatePrintHeader(){
   if(emp.logo){ printLogo.src=emp.logo; printLogo.style.display='block'; printPh.style.display='none'; }
   else{ printLogo.style.display='none'; printPh.style.display='block'; }
   document.getElementById('print-co-name').textContent  = emp.nombre    || '';
-  document.getElementById('print-co-rut').textContent   = emp.rut       ? 'RUT: '+emp.rut : '';
+  document.getElementById('print-co-rut').textContent = '';
   document.getElementById('print-co-addr').textContent  = emp.direccion || '';
   document.getElementById('print-co-phone').textContent = emp.telefono  || '';
 }
@@ -1001,7 +1001,7 @@ function updateCompanyBar(){
   if(emp){
     if(emp.logo){ barLogo.src=emp.logo; barLogo.style.display='block'; }
     else{ barLogo.style.display='none'; }
-    const sub = [emp.rut?'RUT: '+emp.rut:'', emp.direccion, emp.telefono].filter(Boolean).join(' · ');
+    const sub = [emp.direccion, emp.telefono].filter(Boolean).join(' · ');
     barInfo.innerHTML = '<div class="company-bar-name">'+emp.nombre+'</div>'+(sub?'<div class="company-bar-sub">'+sub+'</div>':'');
   } else {
     barLogo.style.display='none';
