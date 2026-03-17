@@ -315,7 +315,9 @@ document.getElementById('ventas-tbody').innerHTML = facturasList.length ? factur
       '<th style="padding:6px 8px;text-align:right;font-weight:500">Subtotal</th>'+
       '</tr></thead>'+
       '<tbody>'+linesHtml+'</tbody>'+
-      '</table></td></tr>';
+      '</table>'+
+      (f.lines[0]&&f.lines[0].observaciones ? '<div style="font-size:12px;color:var(--muted);font-style:italic;padding:6px 0 2px">Obs: '+f.lines[0].observaciones+'</div>' : '')+
+      '</td></tr>';
   }).join('') : '<tr><td colspan="8" class="state">Sin registros.</td></tr>';
 }
 
