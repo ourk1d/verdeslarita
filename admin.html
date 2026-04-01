@@ -229,11 +229,28 @@ async function loadVentas(){
   // TEMPORAL: QUITA EL FILTRO PARA PROBAR
   let q = sbUrl+'/rest/v1/facturas?select=*&order=fecha.desc,created_at.desc&limit=5000';
   
-  // Comenta temporalmente el filtro de fecha
-  // if(month){
-  //   const d = new Date(month+'-01'); d.setMonth(d.getMonth()+1);
-  //   q += '&fecha=gte.'+month+'-01&fecha=lt.'+d.toISOString().slice(0,10);
-  // }
+if(month){
+    // Dividir año y mes
+    const [year, monthNum] = month.split('-');
+    
+    // Fecha inicio: primer día del mes (formato YYYY-MM-DD)
+    const startDate = `${year}-${monthNum}-01`;
+    
+    // Calcular el primer día del próximo mes (sin usar toISOString)
+    let nextYear = parseInt(year);
+    let nextMonth = parseInt(monthNum) + 1;
+    if(nextMonth > 12) {
+        nextMonth = 1;
+        nextYear++;
+    }
+    const endDate = `${nextYear}-${String(nextMonth).padStart(2, '0')}-01`;
+    
+    // Construir el filtro correctamente
+    q += `&fecha=gte.${startDate}&fecha=lt.${endDate}`;
+    
+    // Debug: verificá en consola
+    console.log('Filtrando desde:', startDate, 'hasta (excluyendo):', endDate);
+}
   
   if(empresa) q += '&empresa=eq.'+encodeURIComponent(empresa);
   if(vendor) q += '&vendedor=eq.'+encodeURIComponent(vendor);
