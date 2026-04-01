@@ -225,20 +225,47 @@ async function loadVentas(){
   const month = document.getElementById('fil-month').value;
   const vendor = document.getElementById('fil-vendor').value;
   const empresa = document.getElementById('fil-empresa').value;
-  let q = sbUrl+'/rest/v1/facturas?select=*&order=fecha.desc,created_at.desc';
-  if(month){
-    const d = new Date(month+'-01'); d.setMonth(d.getMonth()+1);
-    q += '&fecha=gte.'+month+'-01&fecha=lt.'+d.toISOString().slice(0,10);
-  }
+  
+  // TEMPORAL: QUITA EL FILTRO PARA PROBAR
+  let q = sbUrl+'/rest/v1/facturas?select=*&order=fecha.desc,created_at.desc&limit=5000';
+  
+  // Comenta temporalmente el filtro de fecha
+  // if(month){
+  //   const d = new Date(month+'-01'); d.setMonth(d.getMonth()+1);
+  //   q += '&fecha=gte.'+month+'-01&fecha=lt.'+d.toISOString().slice(0,10);
+  // }
+  
   if(empresa) q += '&empresa=eq.'+encodeURIComponent(empresa);
   if(vendor) q += '&vendedor=eq.'+encodeURIComponent(vendor);
+  
+  console.log('CONSULTA SIN FILTRO:', q);
+  
   try{
-    const res = await fetch(q,{headers:{'apikey':sbKey,'Authorization':'Bearer '+sbKey,'Accept':'application/json','x-app-secret':appSecret}});
+    const res = await fetch(q,{
+      headers:{
+        'apikey':sbKey,
+        'Authorization':'Bearer '+sbKey,
+        'Accept':'application/json',
+        'x-app-secret':appSecret
+      }
+    });
+    
     if(!res.ok) throw new Error('HTTP '+res.status);
     ventasRows = await res.json();
+    
+    console.log('TOTAL REGISTROS:', ventasRows.length);
+    console.log('FECHAS EXTREMAS:', {
+      mas_reciente: ventasRows[0]?.fecha,
+      mas_antigua: ventasRows[ventasRows.length-1]?.fecha
+    });
+    console.log('FECHAS DEL 28 AL 31:', ventasRows.filter(r => r.fecha >= '2026-03-28' && r.fecha <= '2026-03-31').map(r => r.fecha));
+    
     renderVentas(ventasRows,month);
     populateVendorFilter(ventasRows);
-  }catch(err){ errRow('ventas-tbody',11,'Error: '+err.message); }
+  }catch(err){ 
+    console.error('Error:', err);
+    errRow('ventas-tbody',11,'Error: '+err.message); 
+  }
 }
 
 function renderVentas(rows,month){
